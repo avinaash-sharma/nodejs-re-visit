@@ -51,6 +51,27 @@ app.get('/userwithparams/:userId', (req, res) => {
   return res.send({ firstName: 'Avinash', lastName: 'Sharma', paramsPassed: req.params.userId, queryPassed: req.query.data });
 })
 
+
+// we can use next() keyword to forward the request to another route
+app.get('/multiple-routes-check', (req, res, next) => {
+  console.log("🚀 ~ app.get ~ multiple-routes-check")
+  // res.send('multiple-routes-check');
+  next();
+}, (req, res, next) => {
+  console.log("🚀 ~ app.get ~ multiple-routes-check 2")
+  res.send('multiple-routes-check 2', next());
+}, (req, res, next) => {
+  console.log("🚀 ~ app.get ~ multiple-routes-check 3")
+  if (!true) {
+    res.status(200).send({ response: 'nothing to display' })
+  } else {
+    next();
+  }
+
+}, (req, res) => {
+  res.status(200).send({ response: 'status is false ' })
+})
+
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
