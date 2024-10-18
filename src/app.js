@@ -1,21 +1,14 @@
 const express = require('express')
 const app = express()
 const port = 7070
+const { userAuth, adminAuth } = require('./middleware/auth')
 
 // app.use((req, res) => {
 //   res.send('Hello World!')
 // })
 
-app.use('/', (req, res, next) => {
-  // res.send('Avinash Sharma')
-  console.log('do something!')
-  if (!true) {
-    next();
-  } else {
-    res.status(401).send('Avinash Sharma :> not authorized')
-
-  }
-})
+app.use('/user', userAuth)
+app.use('/admin', adminAuth)
 
 
 // app.use('/demo', (req, res) => {
@@ -60,7 +53,7 @@ app.get('/userwithparams/:userId', (req, res) => {
 
 
 // we can use next() keyword to forward the request to another route
-app.get('/multiple-routes-check', (req, res, next) => {
+app.get('/admin/multiple-routes-check', (req, res, next) => {
   console.log("🚀 ~ app.get ~ multiple-routes-check")
   // res.send('multiple-routes-check');
   next();
@@ -76,7 +69,7 @@ app.get('/multiple-routes-check', (req, res, next) => {
   }
 
 }, (req, res) => {
-  res.status(200).send({ response: 'status is false ' })
+  res.status(200).send({ response: 'Authorized but, status is false ' })
 })
 
 app.listen(port, () => {
