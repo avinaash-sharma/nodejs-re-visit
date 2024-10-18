@@ -6,9 +6,16 @@ const port = 7070
 //   res.send('Hello World!')
 // })
 
-// app.use('/', (req, res) => {
-//   res.send('Avinash Sharma')
-// })
+app.use('/', (req, res, next) => {
+  // res.send('Avinash Sharma')
+  console.log('do something!')
+  if (!true) {
+    next();
+  } else {
+    res.status(401).send('Avinash Sharma :> not authorized')
+
+  }
+})
 
 
 // app.use('/demo', (req, res) => {
