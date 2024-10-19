@@ -54,6 +54,38 @@ app.get('/userbyemail', async (req, res) => {
   }
 })
 
+app.delete('/delete-by-email', async (req, res) => {
+  console.log("🚀 ~ app.delete ~ req.body.emailId:", req.body.emailId)
+  const emailId = req.body.emailId;
+  try {
+    const result = await User.findOneAndDelete({ emailId });
+
+    if (!result) {
+      return res.status(404).send('User not found');
+    }
+
+    res.send('User deleted successfully');
+  } catch (error) {
+    res.send(error)
+  }
+})
+
+app.delete('/delete-by-id', async (req, res) => {
+  console.log("🚀 ~ app.delete ~ req.body.emailId:", req.body.userId)
+  const userId = req.body.userId;
+  try {
+    const result = await User.findByIdAndDelete(userId);
+
+    if (!result) {
+      return res.status(404).send('User not found');
+    }
+
+    res.send('User deleted successfully');
+  } catch (error) {
+    res.send(error)
+  }
+})
+
 // const user = new User(userObject);
 
 
