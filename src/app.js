@@ -27,13 +27,14 @@ app.get('/feed', async (req, res) => {
 app.post('/signup', async (req, res) => {
   console.log("🚀 ~ app.post ~ req:", req.body);
 
-  const user = new User(req.body)
+  const user = new User(req.body);
   try {
-    // saving the user to db
+    // Saving the user to db
     await user.save();
-    res.send('User added successfully')
+    res.status(201).send('User added successfully'); // 201 Created
   } catch (error) {
-    res.send(error)
+    console.error("Error adding user:", error);
+    res.status(500).send(error.message);
   }
 })
 
@@ -80,7 +81,17 @@ app.delete('/delete-by-id', async (req, res) => {
       return res.status(404).send('User not found');
     }
 
-    res.send('User deleted successfully');
+    res.send({ message: 'deleted succsessfully', result });
+  } catch (error) {
+    res.send(error)
+  }
+})
+
+app.patch('/user', async (req, res) => {
+  const data = req.body;
+  try {
+    const updated = await User.findByIdAndUpdate(data.userId, data, { returnDocument: 'after', runValidators: true });
+    res.send({ message: 'updated succsessfully', updated });
   } catch (error) {
     res.send(error)
   }
