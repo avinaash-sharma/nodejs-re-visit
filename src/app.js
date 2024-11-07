@@ -3,11 +3,15 @@ const { connectionDB } = require('./config/database')
 const User = require('./models/user');
 const { isValidSignUpData } = require('./utils/validation');
 const bcrypt = require('bcrypt');
+const cookieParser = require('cookie-parser');
+const jwt = require('jsonwebtoken');
+const { userAuth } = require('./middleware/auth');
 
 const app = express()
 const port = 7070
 
 app.use(express.json());
+app.use(cookieParser());
 
 // get all users
 
@@ -49,22 +53,35 @@ app.post('/signup', async (req, res) => {
 
 app.post('/login', async (req, res) => {
 
-  const { emailId, password } = req.body;
-  const user = await User.findOne({ emailId });
-  console.log("🚀 ~ app.post ~ user:", user)
-  if (!user) {
-    return res.status(404).send('Invalid Credentials');
+  try {
+    const { emailId, password } = req.body;
+
+    const user = await User.findOne({ emailId: emailId });
+
+    if (!user || user === null) {
+      throw new Error("Invalid credentials");
+    }
+    const isPasswordValid = await user.validatePassword(password);
+
+    if (isPasswordValid) {
+      const token = await user.getJWT();
+
+
+      res.cookie("token", token, {
+        expires: new Date(Date.now() + 8 * 3600000),
+      });
+      res.send("Login Successful!!!");
+    } else {
+      throw new Error("Invalid credentials");
+    }
+  } catch (err) {
+    res.status(400).send("ERROR : " + err.message);
   }
-  const isValidPassword = await bcrypt.compare(password, user.password);
-  if (!isValidPassword) {
-    return res.status(401).send('Invalid Credentials');
-  }
-  res.send('Login successful');
 })
 
 app.get('/userbyemail', async (req, res) => {
 
-  console.log("🚀 ~ app.get ~ req.body.emailId:", req.body.emailId)
+
   try {
     const user = await User.findOne({ emailId: req.body.emailId }, 'firstName');
     res.send(user);
@@ -80,7 +97,7 @@ app.get('/userbyemail', async (req, res) => {
 })
 
 app.delete('/delete-by-email', async (req, res) => {
-  console.log("🚀 ~ app.delete ~ req.body.emailId:", req.body.emailId)
+
   const emailId = req.body.emailId;
   try {
     const result = await User.findOneAndDelete({ emailId });
@@ -96,7 +113,7 @@ app.delete('/delete-by-email', async (req, res) => {
 })
 
 app.delete('/delete-by-id', async (req, res) => {
-  console.log("🚀 ~ app.delete ~ req.body.emailId:", req.body.userId)
+
   const userId = req.body.userId;
   try {
     const result = await User.findByIdAndDelete(userId);
@@ -108,6 +125,17 @@ app.delete('/delete-by-id', async (req, res) => {
     res.send({ message: 'deleted succsessfully', result });
   } catch (error) {
     res.send(error)
+  }
+})
+
+app.get('/profile', userAuth, async (req, res) => {
+
+  try {
+    const user = req.user;
+
+    res.send(user);
+  } catch (error) {
+    res.send(error.message)
   }
 })
 
